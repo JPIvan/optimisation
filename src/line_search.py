@@ -43,8 +43,15 @@ def goldensection(func, x, dx, precision=1e-6):
 
     # first we need to bracket the minimum
     t = 1
-    while _f(x + t*dx) < _f(x):
+    for _ in range(64):
+        if _f(x + t*dx) > _f(x):
+            break
         t *= 2
+    else:
+        raise RuntimeError(
+            "Bracketing minimum failed. "
+            "Check if func is convex, start point, and search direction."
+        )
     # minimum is now definitely between f(x + t*dx) and f(x)
     # do golden section search
     xopt = _gs(x, x + t*dx)  # golden section actually finds the optimal x
