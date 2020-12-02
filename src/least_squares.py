@@ -19,7 +19,7 @@ class least_squares:
         return
     
     def __call__(self, x):
-        """ Given x, returns the norm of Ax - b.
+        """ Given x, returns the squared norm of Ax - b.
 
         Args:
             x: 2-d numpy matrix (column vector)
@@ -27,11 +27,12 @@ class least_squares:
             || A*x - b ||_2^2
         """
         _x = x
-        if not isinstance(_x, np.ndarray):
+        if not isinstance(_x, np.ndarray): # if not numpy array try to make one
             _x = np.array(_x).reshape(-1, 1)
         elif _x.ndim != 2 or x.shape[1] != 1:  # if not column vector fix
             _x = _x.reshape(-1, 1)
-        elif _x.shape[0] != self.A.shape[1]:  # column vector of wrong size
+        
+        if _x.shape[0] != self.A.shape[1]:  # column vector of wrong size
             raise ValueError(
                     f"Shape mismatch, A: {self.A.shape}, x: {_x.shape}."
                 )
