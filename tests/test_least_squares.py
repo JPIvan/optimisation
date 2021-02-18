@@ -1,6 +1,7 @@
 import numpy as np
 from pytest import approx, raises
 
+import context  # noqa
 from src.least_squares import least_squares
 
 
