@@ -1,3 +1,5 @@
+![Build Status](https://github.com/JPIvan/optimisation/workflows/python-testing/badge.svg)
+
 # Optimisation
 
 This repo is intended to be an instructive collection of optimisation algorithms, following the book "Convex Optimisation" by Stephan Boyd.
