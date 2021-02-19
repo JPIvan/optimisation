@@ -33,6 +33,7 @@ class TestLeastSquaresClass:
             # check that we actually have a norm
             LS = self.random_obj()
             for x in np.random.uniform(low=-1, high=1, size=(5, 5)):
+                x = x.reshape((-1, 1))
                 for a in np.random.uniform(low=-1, high=1, size=5):
                     assert not (LS(a*x) == approx(a**2*LS(x)))
                     # since we are calculating ||Ax - b||^2 we should not have
@@ -42,9 +43,8 @@ class TestLeastSquaresClass:
                     assert a**2*LS(x) == approx(scaledLS(a*x))
                     # for a norm a^2||Ax - b||^2 == ||aAx - ab||^2
 
-                    assert LS(x) <= approx(
-                        (np.linalg.norm(LS.A@x) + np.linalg.norm(LS.b))**2
-                    )
+                    assert LS(x) <= (
+                        np.linalg.norm(LS.A@x) + np.linalg.norm(LS.b))**2
                     # for a norm ||Ax - b||^2 <= (||Ax|| + ||-b||)^2
                     # ||-b|| = ||b||
 
