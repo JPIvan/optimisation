@@ -13,8 +13,8 @@ class least_squares:
         Returns:
             None
         """
-        self.A = A
-        self.b = b
+        self.A = np.array(A)
+        self.b = np.array(b).reshape((-1, 1))
 
         return
 
