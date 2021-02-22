@@ -57,6 +57,7 @@ class TestLeastSquaresClass:
                     )
 
         def test_empty_norm(self):
+            # empty norm should be zero
             LS = least_squares(
                 A=np.zeros(shape=(5, 5)),
                 b=np.zeros(5)
