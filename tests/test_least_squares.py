@@ -6,22 +6,42 @@ from src.least_squares import least_squares
 
 
 class TestLeastSquaresClass:
+    """ This is a class containing test cases for the least_squares
+    class.
+
+    The following tests are desired:
+    [ ] - Fault tolerant constructor.
+    [x] - Reasonable assurance that norms are correctly calculated.
+    [ ] - Reasonable assurance that minima are correctly calculated.
+    """
     class TestNorm:
+        """ Class for testing norm properties of least_squares norm calculations
+        performed using the __call__ function.
+
+        Many tests check norm properties. Since the actual calculation of
+        the norm is done using numpy, errors are likely to be caused by
+        arguments being treated incorrectly.
+        """
         def random_obj(self, size=5):
+            """ Create random least-squares object for testing.
+            """
             return least_squares(
                 A=np.random.uniform(low=-1, high=1, size=(size, size)),
                 b=np.random.uniform(low=-1, high=1, size=size)
-            )  # create random least-squares object
+            )
 
         def test_iterables(self):
-            # check if norm is calculated the same way with different iterables
+            """ Check if norm is calculated the same way with different
+            iterables as arguments.
+            """
             LS = self.random_obj()
             assert LS(range(5)) == approx(LS([0, 1, 2, 3, 4]))
             assert LS(range(5)) == approx(LS(np.array(range(5))))
             print(f"Failed on A = {LS.A}, b = {LS.b}")
 
         def test_input_size(self):
-            # check failure on wrong-size input
+            """ Check failure on wrong-size input.
+            """
             LS = self.random_obj()
             with raises(ValueError):
                 LS(range(4))
@@ -30,7 +50,8 @@ class TestLeastSquaresClass:
             print(f"Failed on A = {LS.A}, b = {LS.b}")
 
         def test_norm_properties(self):
-            # check that we actually have a norm
+            """ Check that the calculated norm has expected properties.
+            """
             LS = self.random_obj()
             for x in np.random.uniform(low=-1, high=1, size=(5, 5)):
                 x = x.reshape((-1, 1))
@@ -57,7 +78,8 @@ class TestLeastSquaresClass:
                     )
 
         def test_empty_norm(self):
-            # empty norm should be zero
+            """ Empty norms should always be zero.
+            """
             LS = least_squares(
                 A=np.zeros(shape=(5, 5)),
                 b=np.zeros(5)
