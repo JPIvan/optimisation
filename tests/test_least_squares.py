@@ -38,11 +38,15 @@ class TestLeastSquaresClass:
                     A=2,
                     b=[1, 2]
                 )  # b too large
-            with raises(ValueError):
-                least_squares(
-                    A=1,
-                    b=1
-                )  # works for n=1, m=1?
+
+        def test_one_dimensional(self):
+            """  Works edge case of for n=1, m=1?
+            """
+            LS = least_squares(
+                A=1,
+                b=1
+            )
+            assert LS(1) == approx(0)  # 1*1 - 1 = 0
 
     class TestNorm:
         """ Class for testing norm properties of least_squares norm calculations
