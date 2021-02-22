@@ -35,8 +35,14 @@ class least_squares:
         Returns:
             None
         """
-        self.A = np.array(A)
+        self.A = np.array(A, ndmin=2)
         self.b = np.array(b).reshape((-1, 1))
+
+        if self.A.shape[0] != self.b.shape[0]:
+            raise ValueError(
+                "A and b have bad shapes: \n{A.shape}, {A}"
+                "\n{b.shape}, {b}."
+            )
 
         return
 
