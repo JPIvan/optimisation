@@ -22,6 +22,28 @@ class TestLeastSquaresClass:
             b=np.random.uniform(low=-1, high=1, size=size)
         )
 
+    class TestInit:
+        """ Class for checking robust initialisation.
+        """
+        def test_shapes(self):
+            """ Only allow initialisation if dim(A) = n*m, dim(b) = n.
+            """
+            with raises(ValueError):
+                least_squares(
+                    A=[[1], [2]],
+                    b=1
+                )  # A too large
+            with raises(ValueError):
+                least_squares(
+                    A=2,
+                    b=[1, 2]
+                )  # b too large
+            with raises(ValueError):
+                least_squares(
+                    A=1,
+                    b=1
+                )  # works for n=1, m=1?
+
     class TestNorm:
         """ Class for testing norm properties of least_squares norm calculations
         performed using the __call__ function.
