@@ -112,3 +112,17 @@ class TestLeastSquaresClass:
             )
             x = np.random.uniform(low=-1, high=1, size=5)
             assert LS(x) == approx(0)  # ||0|| = 0
+
+    class TestMinimiser:
+        """ Class for testing least_squares.solve_minimum().
+        """
+        def test_underdetermined(self):
+            """ Solutions to underdetermined and determined systems should
+            be exactly 0.
+            """
+            LS = least_squares(
+                A=[[1, 2, 3], [4, 5, 6]],
+                b=[1, 2]
+            )  # underdetermined
+            x_ = LS.solve_minimum()['x*']
+            assert LS(x_) == approx(0)
