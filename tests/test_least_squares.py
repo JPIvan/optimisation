@@ -137,3 +137,28 @@ class TestLeastSquaresClass:
             )  # underdetermined
             x_ = LS.solve_minimum()['x*']
             assert LS(x_) == approx(0)
+
+        def test_overdetermined(self):
+            """ Solutions to overdetermined systems should
+            be local (and global) minima.
+
+            Right now test methodology is just to check that solution
+            is a local minimum. More complete tests are desireable.
+            """
+            LS = least_squares(
+                A=[[1, 2], [3, 5], [7, 11]],  # primes ensure independence
+                b=[13, 17, 19]
+            )  # overdetermined
+            x_, residuals, rank, _ = LS.solve_minimum().values()
+            assert rank < LS.b.shape[0]  # ensure system is overdetermined
+            assert residuals > 0  # ensure system is overdetermined
+            assert np.linalg.norm(x_) > 0  # overdetermined has no solution at 0
+            for i in range(100):
+                random_perturbation = np.random.uniform(
+                    low=-1,
+                    high=1,
+                    size=x_.shape,
+                )
+                random_perturbation *= 1e-3 * np.linalg.norm(x_)
+                # ensure perturbation is small
+                assert LS(x_) < LS(x_ + random_perturbation)
