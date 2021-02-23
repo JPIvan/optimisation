@@ -126,3 +126,14 @@ class TestLeastSquaresClass:
             )  # underdetermined
             x_ = LS.solve_minimum()['x*']
             assert LS(x_) == approx(0)
+
+        def test_determined(self):
+            """ Solutions to underdetermined and determined systems should
+            be exactly 0.
+            """
+            LS = least_squares(
+                A=[[1, 2, 3], [4, 5, 6], [2, 5, 7]],
+                b=[1, 2, 3]
+            )  # underdetermined
+            x_ = LS.solve_minimum()['x*']
+            assert LS(x_) == approx(0)
