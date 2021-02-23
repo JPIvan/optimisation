@@ -152,7 +152,7 @@ class TestLeastSquaresClass:
             x_, residuals, rank, _ = LS.solve_minimum().values()
             assert rank < LS.b.shape[0]  # ensure system is overdetermined
             assert residuals > 0  # ensure system is overdetermined
-            assert np.linalg.norm(x_) > 0  # overdetermined has no solution at 0
+            assert np.linalg.norm(x_) > 0  # overdetermined -> no solution at 0
             for i in range(100):
                 random_perturbation = np.random.uniform(
                     low=-1,
