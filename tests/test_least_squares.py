@@ -49,8 +49,8 @@ class TestLeastSquaresClass:
             assert LS(1) == approx(0)  # 1*1 - 1 = 0
 
     class TestNorm:
-        """ Class for testing norm properties of least_squares norm calculations
-        performed using the __call__ function.
+        """ Class for testing norm properties of least_squares norm
+        calculations performed using the __call__ function.
 
         Many tests check norm properties. Since the actual calculation of
         the norm is done using numpy, errors are likely to be caused by
