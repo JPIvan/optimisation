@@ -47,6 +47,16 @@ def goldensection(func, x, dx, precision=1e-6):
         else:
             return _gs(x2, x4, h=h*iphi, x2=x3, fx2=fx3)
 
+    # check search direction
+    for n in range(6):
+        if _f(x + dx*10**-n) < _f(x):
+            break
+    else:  # did not find any step size for which funciton decreases.
+        raise ValueError(
+            "Function does not appear to decrease in search direction. "
+            "Check if func is convex, start point, and search direction."
+        )
+
     # first we need to bracket the minimum
     t = 1
     for _ in range(64):
