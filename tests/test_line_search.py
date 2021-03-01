@@ -61,3 +61,21 @@ class TestGoldenSection:
             # from the solution
             assert LS(solution['x']) < LS(solution['x'] + eps*dx)
             assert LS(solution['x']) < LS(solution['x'] - eps*dx)
+
+    def test_undefined_start(self):
+        """ Check behaviour when an undefined start point is given.
+
+        Search should not fail silently, an explicit error is expected.
+        """
+        with raises(ZeroDivisionError):
+            line_search.goldensection(
+                func=lambda x: 1/x,
+                x=0,  # division by zero
+                dx=1,  # dummy value, no sensible search dir. at start point
+            )
+        with raises((ValueError, TypeError)):
+            line_search.goldensection(
+                func=lambda x: x**2 if abs(x) < 1 else None,
+                x=2,  # function undefined at this value
+                dx=-4,  # good search direction
+            )
