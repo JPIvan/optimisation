@@ -79,3 +79,14 @@ class TestGoldenSection:
                 x=2,  # function undefined at this value
                 dx=-4,  # good search direction
             )
+
+    def test_bad_search_direction(self):
+        """ Check that search fail explicitly when a bad search direction is
+        given and a minimum cannot be bracketed.
+        """
+        with raises(ValueError):
+            line_search.goldensection(
+                func=lambda x: (x - 4)**2,  # minimum at x = 4
+                x=3,  # start
+                dx=-1,  # bad search direction; away from minimum
+            )
