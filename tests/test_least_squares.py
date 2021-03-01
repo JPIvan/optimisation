@@ -10,9 +10,9 @@ class TestLeastSquaresClass:
     class.
 
     The following tests are desired:
-    [ ] - Fault tolerant constructor.
+    [x] - Fault tolerant constructor.
     [x] - Reasonable assurance that norms are correctly calculated.
-    [ ] - Reasonable assurance that minima are correctly calculated.
+    [x] - Reasonable assurance that minima are correctly calculated.
     """
     def random_obj(size=5):
         """ Create random least-squares object for testing.
