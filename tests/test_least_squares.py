@@ -59,6 +59,8 @@ class TestLeastSquaresClass:
         def test_iterables(self):
             """ Check if norm is calculated the same way with different
             iterables as arguments.
+
+            Current test: lists and np.arrays
             """
             LS = TestLeastSquaresClass.random_obj()
             assert LS(range(5)) == approx(LS([0, 1, 2, 3, 4]))
@@ -68,11 +70,11 @@ class TestLeastSquaresClass:
         def test_input_size(self):
             """ Check failure on wrong-size input.
             """
-            LS = TestLeastSquaresClass.random_obj()
+            LS = TestLeastSquaresClass.random_obj()  # 5x5 LS instance
             with raises(ValueError):
-                LS(range(4))
+                LS(range(4))  # 5x5 should fail on 4x1 input vector
             with raises(ValueError):
-                LS(range(6))
+                LS(range(6))  # 5x5 should fail on 6x1 input vector
             print(f"Failed on A = {LS.A}, b = {LS.b}")
 
         def test_norm_properties(self):
@@ -134,7 +136,7 @@ class TestLeastSquaresClass:
             LS = least_squares(
                 A=[[1, 2, 3], [4, 5, 6], [2, 5, 7]],
                 b=[1, 2, 3]
-            )  # underdetermined
+            )  # determined
             x_ = LS.solve_minimum()['x*']
             assert LS(x_) == approx(0)
 
@@ -160,5 +162,6 @@ class TestLeastSquaresClass:
                     size=x_.shape,
                 )
                 random_perturbation *= 1e-3 * np.linalg.norm(x_)
-                # ensure perturbation is small
+                # ensure perturbation is small compared to x_
                 assert LS(x_) < LS(x_ + random_perturbation)
+                # check that x_ is a local minimum
