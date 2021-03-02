@@ -22,7 +22,7 @@ def _create_jac(func):
             raise ValueError(f"x must be a column vector, got {x}")
 
         normx = np.linalg.norm(x)  # scale step-size appropriately
-        delta = 1E-3*normx
+        delta = 1E-4*normx
         jacx = np.zeros_like(x, dtype=float)
         for i in range(x.shape[0]):
             dxi = np.zeros_like(x, dtype=float)
