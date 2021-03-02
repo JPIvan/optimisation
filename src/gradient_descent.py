@@ -23,9 +23,9 @@ def _create_jac(func):
 
         normx = np.linalg.norm(x)  # scale step-size appropriately
         delta = 1E-3*normx
-        jacx = np.zeros_like(x)
+        jacx = np.zeros_like(x, dtype=float)
         for i in range(x.shape[0]):
-            dxi = np.zeros_like(x)
+            dxi = np.zeros_like(x, dtype=float)
             dxi[i][0] = delta  # difference in only one variable
             jacx[i] = (func(x + dxi) - func(x - dxi)) / (2*delta)
         return jacx
