@@ -42,13 +42,4 @@ class TestCreateJacobian:
             numericaljac = gradient_descent._create_jac(_poly)
             for _ in range(10):  # 10 random points on function
                 x = np.random.uniform(low=-10, high=10, size=(1, 1))
-                print(
-                    f"Polynomial: {k[0]}",
-                    *(f" + {k[n]}x^{n}" for n in range(1, polydegree+1)),
-                    f"\nDerivative: {k[1]}",
-                    *(f" + {(n+1)*k[n+1]}x^{n}" for n in range(1, polydegree)),
-                    f"\nEvaluated at: {x}"
-                    f"\nNumerical: {numericaljac(x).item()}"
-                    f", Analytic: {_polyderiv(x)}"
-                )
                 assert numericaljac(x).item() == approx(_polyderiv(x))
