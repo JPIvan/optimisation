@@ -23,9 +23,7 @@ class TestCreateJacobian:
         """
         for _ in range(10):  # try 10 random polynomials
             polydegree = np.random.randint(2, 5)
-            polydegree = 3
             k = np.random.uniform(low=-1, high=1, size=polydegree+1)
-            k = [1, 2, 1, 1]
             # some random coefficients for the polynomial
 
             def _poly(x):
@@ -44,7 +42,6 @@ class TestCreateJacobian:
             numericaljac = gradient_descent._create_jac(_poly)
             for _ in range(10):  # 10 random points on function
                 x = np.random.uniform(low=-10, high=10, size=(1, 1))
-                x = np.array(2, ndmin=2)
                 print(
                     f"Polynomial: {k[0]}",
                     *(f" + {k[n]}x^{n}" for n in range(1, polydegree+1)),
