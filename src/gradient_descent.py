@@ -23,9 +23,9 @@ def _create_jac(func):
 
         normx = np.linalg.norm(x)
         if normx == 0:
-            delta = 1E-4  # prevent division by 0 later
+            delta = 1E-6  # prevent division by 0 later
         else:
-            delta = 1E-4*normx  # scale step-size appropriately
+            delta = 1E-6*normx  # scale step-size appropriately
         jacx = np.zeros_like(x, dtype=float)
         for i in range(x.shape[0]):
             dxi = np.zeros_like(x, dtype=float)
