@@ -44,7 +44,7 @@ class TestCreateJacobian:
     def test_create_jac_1d(self):
         """ Check if the jacobian is correctly calculated for 1-D polynomials.
         """
-        for _ in range(10):  # try 10 random polynomials
+        for _ in range(100):  # try 100 random polynomials
             poly, polyderiv = self._random_polynomial_and_derivative()
 
             numericaljac = gradient_descent._create_jac(poly)
