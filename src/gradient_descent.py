@@ -21,8 +21,11 @@ def _create_jac(func):
         if x.shape[1] != 1:
             raise ValueError(f"x must be a column vector, got {x}")
 
-        normx = np.linalg.norm(x)  # scale step-size appropriately
-        delta = 1E-4*normx
+        normx = np.linalg.norm(x)
+        if normx == 0:
+            delta = 1E-4  # prevent division by 0 later
+        else:
+            delta = 1E-4*normx  # scale step-size appropriately
         jacx = np.zeros_like(x, dtype=float)
         for i in range(x.shape[0]):
             dxi = np.zeros_like(x, dtype=float)
