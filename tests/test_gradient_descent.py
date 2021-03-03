@@ -50,7 +50,11 @@ class TestCreateJacobian:
             numericaljac = gradient_descent._create_jac(poly)
             for _ in range(10):  # 10 random points on function
                 x = np.random.uniform(low=-10, high=10, size=(1, 1))
-                assert numericaljac(x).item() == approx(polyderiv(x))
+                assert numericaljac(x).item() == approx(
+                    polyderiv(x),
+                    abs=1E-6 if polyderiv(x) == 0 else None,
+                    # comparision to 0 unreasonably stringent
+                )
 
     def test_create_jac_1d_integers(self):
         """ Numpy arrrays do not upcast when individual elements are
@@ -69,4 +73,8 @@ class TestCreateJacobian:
             numericaljac = gradient_descent._create_jac(poly)
             for _ in range(10):  # 10 random integer points on function
                 x = np.random.randint(low=-10, high=10, size=(1, 1))
-                assert numericaljac(x).item() == approx(polyderiv(x))
+                assert numericaljac(x).item() == approx(
+                    polyderiv(x),
+                    abs=1E-6 if polyderiv(x) == 0 else None,
+                    # comparision to 0 unreasonably stringent
+                )
