@@ -18,31 +18,39 @@ class TestCreateJacobian:
     "unfriendly" is inteanded to mean things like functions which induce
     precision loss or numerical instability
     """
+    def _random_polynomial_and_derivative(self, integer_coef=False):
+        polydegree = np.random.randint(2, 5)
+        # generate some random coefficients for the polynomial
+        if integer_coef:
+            k = np.random.randint(low=-5, high=5, size=polydegree+1)
+        else:
+            k = np.random.uniform(low=-1, high=1, size=polydegree+1)
+
+        def _poly(x):
+            _x = np.array([x**n for n in range(polydegree+1)]).flatten()
+            # flatten in case we recieved e.g. x = array([[1]])
+            # then _x would be _x = arry [ [[1]], [[2]], ... ]
+            return np.sum(k*_x)
+
+        def _polyderiv(x):
+            _k = k[1:]  # differentiating drops constant term
+            _x = np.array([(n+1)*x**n for n in range(polydegree)])
+            # for example d/dx (x^3) = 3x^2
+            _x = _x.flatten()
+            return np.sum(_k*_x)
+
+        return _poly, _polyderiv
+
     def test_create_jac_1d(self):
         """ Check if the jacobian is correctly calculated for 1-D polynomials.
         """
         for _ in range(10):  # try 10 random polynomials
-            polydegree = np.random.randint(2, 5)
-            k = np.random.uniform(low=-1, high=1, size=polydegree+1)
-            # some random coefficients for the polynomial
+            poly, polyderiv = self._random_polynomial_and_derivative()
 
-            def _poly(x):
-                _x = np.array([x**n for n in range(polydegree+1)]).flatten()
-                return np.sum(k*_x)
-
-            def _polyderiv(x):
-                _k = k[1:]  # differentiating drops constant term
-                _x = np.array([(n+1)*x**n for n in range(polydegree)])
-                _x = _x.flatten()
-                # for example d/dx (x^3) = 3x^2
-                # flatten in case we recieved e.g. x = array([[1]])
-                # then _x would be _x = arry [ [[1]], [[2]], ... ]
-                return np.sum(_k*_x)
-
-            numericaljac = gradient_descent._create_jac(_poly)
+            numericaljac = gradient_descent._create_jac(poly)
             for _ in range(10):  # 10 random points on function
                 x = np.random.uniform(low=-10, high=10, size=(1, 1))
-                assert numericaljac(x).item() == approx(_polyderiv(x))
+                assert numericaljac(x).item() == approx(polyderiv(x))
 
     def test_create_jac_1d_integers(self):
         """ Numpy arrrays do not upcast when individual elements are
@@ -54,21 +62,11 @@ class TestCreateJacobian:
             A[0] = 1.1  # will not upcast result will be array([1, 2])
         """
         for _ in range(10):  # try 10 random polynomials
-            polydegree = np.random.randint(2, 5)
-            k = np.random.randint(low=-5, high=5, size=polydegree+1)
-            # some random integer coefficients for the polynomial
+            poly, polyderiv = self._random_polynomial_and_derivative(
+                integer_coef=True
+            )
 
-            def _intpoly(x):
-                _x = np.array([x**n for n in range(polydegree+1)]).flatten()
-                return np.sum(k*_x)
-
-            def _intpolyderiv(x):
-                _k = k[1:]
-                _x = np.array([(n+1)*x**n for n in range(polydegree)])
-                _x = _x.flatten()
-                return np.sum(_k*_x)
-
-            numericaljac = gradient_descent._create_jac(_intpoly)
+            numericaljac = gradient_descent._create_jac(poly)
             for _ in range(10):  # 10 random integer points on function
                 x = np.random.randint(low=-10, high=10, size=(1, 1))
-                assert numericaljac(x).item() == approx(_intpolyderiv(x))
+                assert numericaljac(x).item() == approx(polyderiv(x))
