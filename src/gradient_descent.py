@@ -34,3 +34,92 @@ def _create_jac(func):
         return jacx
     return _jac
 
+
+def steepest_descent(
+            func,
+            x0,
+            ls="golden-section",
+            jac=None,
+            stop="jac-norm",
+            tol=1E-6,
+            maxiter=1024,
+        ):
+    """ Perform a steepest descent search. See Boyd 9.3 for details.
+
+    Args:
+        func: function to be minimised
+        x0: start point
+        ls: line search method, currently supports:
+            "golden-section" [DEFAULT]
+            "backtracking" [UNTESTED]
+        jac: function returning jacobian of func
+            defaults to None
+            will evaluate gradient numerically if none given
+        stop: stopping criterion, currently suports:
+            "jac-norm" [DEFAULT] - stops when ||jac(x)|| < tol
+        tol: tolerance for stopping condition
+            defaults to 1E-6
+        maxiter: maximum number of iterations
+
+    Returns:
+        OptimisationResult
+    """
+    if jac is None:
+        jac = _create_jac(func)
+    _nfev, _njev = 0, 0
+
+    def _f(x):  # should only be used locally, pass func to other functions
+        nonlocal _nfev
+        _nfev += 1
+        return func(x)
+
+    def _jac(x):  # should only be used locally, pass jac to other functions
+        nonlocal _njev
+        _njev += 1
+        return jac(x)
+
+    _x = x0  # search from given start point
+    _dx = _jac(_x)  # calculate gradient for first iteration
+    for niter in range(maxiter):
+        searchdir = -_dx
+
+        if ls == "golden-section":
+            lsres = line_search.goldensection(func, _x, dx=searchdir)
+        elif ls == "backtracking":
+            raise NotImplementedError(
+                "Usage of backtracking search not permitted as backtracking "
+                "line search has not been tested."
+            )
+        else:
+            raise ValueError(f"No such search method: \"{ls}\".")
+
+        _nfev += lsres["nfev"]
+        _njev += lsres["njev"]
+        _x = lsres["x"]
+
+        if stop == "jac-norm":
+            _dx = _jac(_x)  # will use as search direction in next loop
+            # saves jacobian evaluations
+            if np.linalg.norm(_dx) < tol:
+                break
+        else:
+            raise ValueError(f"No such stopping criterion: \"{stop}\".")
+    else:
+        return OptimisationResult(
+            success=False,
+            x=_x,
+            niter=maxiter,
+            nfev=_nfev,
+            njev=_njev,
+            info="Maximum number of iterations exceeded.",
+            jac=_jac(_x)
+        )
+
+    return OptimisationResult(
+            success=True,
+            x=_x,
+            niter=niter,
+            nfev=_nfev,
+            njev=_njev,
+            jac=_jac(_x)
+        )
