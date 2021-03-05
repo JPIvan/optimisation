@@ -24,3 +24,14 @@ class OptimisationResult:
         self.info = kwargs["info"] if "info" in kwargs else None
         self.jac = kwargs["jac"] if "jac" in kwargs else None
 
+    def __repr__(self):
+        return (
+            f"success: {self.success}\n"
+            f"x*: {self.x}\n"
+            f"niter: {self.niter}\n"
+            f"nfev: {self.nfev}\n"
+            f"njev: {self.njev}\n"
+            f"nhev: {self.nhev}\n"
+            f"info: {self.info}\n"
+            f"jac(x*): {self.jac}\n"
+        )
