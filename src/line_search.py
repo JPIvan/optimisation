@@ -14,7 +14,8 @@ def goldensection(func, x, dx, precision=1e-6):
     Returns:
         't': argmin_s f(x + s*dx)
         'x': optimal x found by golden section search
-        some other metadata
+        'nfev': number of function evaluations performed
+        'njev': number of jacobian evaluations performed
     """
     iphi = (5**0.5 - 1) / 2  # 1/phi
     iphi2 = (3 - 5**0.5) / 2  # 1/phi^2
@@ -96,7 +97,8 @@ def backtracking(func, jac, x, dx, alpha=0.3, beta=0.8):
     Returns:
         't': argmin_s f(x + s*dx)
         'x': optimal x
-        some other metadata
+        'nfev': number of function evaluations performed
+        'njev': number of jacobian evaluations performed
     """
     if alpha <= 0 or alpha >= 0.5:
         raise ValueError(
