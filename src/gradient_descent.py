@@ -1,5 +1,5 @@
 import numpy as np
-import src.line_search
+from src import line_search
 from src.result import OptimisationResult
 
 
