@@ -2,7 +2,7 @@ import numpy as np
 from pytest import approx
 
 import context  # noqa
-from src import gradient_descent
+from src import gradient_descent, least_squares
 
 
 class TestCreateJacobian:
@@ -78,3 +78,22 @@ class TestCreateJacobian:
                     abs=1E-6 if polyderiv(x) == 0 else None,
                     # comparision to 0 unreasonably stringent
                 )
+
+    def test_create_jac_nd(self):
+        """ Check if the jacobian is correctly calculated for n-D least
+        squares problems.
+        """
+        for _ in range(10):  # try 10 random least squares problems
+            size = np.random.randint(2, 10)
+            LS = least_squares.least_squares(
+                A=np.random.uniform(low=-1, high=1, size=(size, size)),
+                b=np.random.uniform(low=-1, high=1, size=size)
+            )
+            numericaljac = gradient_descent._create_jac(LS)
+
+            for _ in range(10):  # 10 random points on function
+                x = np.random.uniform(low=-10, high=10, size=(size, 1))
+                assert numericaljac(x) == approx(
+                        2*LS.A.T @ LS.A @ x - 2*LS.A.T @ LS.b
+                    )
+                # Compare with analytical solution
