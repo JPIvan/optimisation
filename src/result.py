@@ -1,7 +1,7 @@
 class OptimisationResult:
     """ A simple structure for storing the results of optimisation procedures.
     """
-    def __init__(self, success, x, niter, nfev, njev, nhev):
+    def __init__(self, success, x, niter, nfev, njev=0, nhev=0, **kwargs):
         """
         Args:
             success: optimisation terminated successfully
