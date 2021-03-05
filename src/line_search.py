@@ -76,6 +76,7 @@ def goldensection(func, x, dx, precision=1e-6):
         'x': xopt,
         't': np.average((xopt - x) / dx),  # x* = x + t*dx
         'nfev': nfev,
+        'njev': 0,
     }
 
 
