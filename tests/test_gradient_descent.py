@@ -97,3 +97,22 @@ class TestCreateJacobian:
                         2*LS.A.T @ LS.A @ x - 2*LS.A.T @ LS.b
                     )
                 # Compare with analytical solution
+
+    def test_create_jac_nd_integers(self):
+        """ Check if the jacobian is correctly calculated for n-D least
+        squares problems with integercoefficients.
+        """
+        for _ in range(10):  # try 10 random least squares problems
+            size = np.random.randint(2, 10)
+            LS = least_squares.least_squares(
+                A=np.random.randint(low=-10, high=10, size=(size, size)),
+                b=np.random.randint(low=-10, high=10, size=size)
+            )
+            numericaljac = gradient_descent._create_jac(LS)
+
+            for _ in range(10):  # 10 random points on function
+                x = np.random.randint(low=-100, high=100, size=(size, 1))
+                assert numericaljac(x) == approx(
+                        2*LS.A.T @ LS.A @ x - 2*LS.A.T @ LS.b
+                    )
+                # Compare with analytical solution
