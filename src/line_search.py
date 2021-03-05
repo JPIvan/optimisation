@@ -128,5 +128,5 @@ def backtracking(func, jac, x, dx, alpha=0.3, beta=0.8):
         'x': x + t*dx,
         't': t,
         'nfev': nfev,
-        'njacev': njacev,
+        'njev': njacev,
     }
