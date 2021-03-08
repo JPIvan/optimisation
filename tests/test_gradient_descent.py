@@ -9,8 +9,8 @@ class TestCreateJacobian:
     """ This is a class containing test cases for the _create_jac function
     which creates a numerical jacobian evaluation function.
 
-    [ ] - Functions with reasonable functions f: R -> R
-    [ ] - Functions with reasonable functions f: R^n -> R
+    [x] - Functions with reasonable functions f: R -> R
+    [x] - Functions with reasonable functions f: R^n -> R
     [ ] - Reasonable behaviour with functions f: R^n -> R^m
     [ ] - Reasonable behaviour for unfriendly functions f: R -> R
     [ ] - Reasonable behaviour for unfriendly  functions f: R^n -> R
