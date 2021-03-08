@@ -27,11 +27,11 @@ class OptimisationResult:
     def __repr__(self):
         return (
             f"success: {self.success}\n"
-            f"x*: {self.x}\n"
+            f"x*: \n{self.x}\n"
             f"niter: {self.niter}\n"
             f"nfev: {self.nfev}\n"
             f"njev: {self.njev}\n"
             f"nhev: {self.nhev}\n"
             f"info: {self.info}\n"
-            f"jac(x*): {self.jac}\n"
+            f"jac(x*): \n{self.jac}\n"
         )
