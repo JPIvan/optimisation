@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 
-def contourf(xlim, ylim, func, gridpoints=51, ncontours=20):
+def contourf(xlim, ylim, func, gridpoints=51, contours=20):
     """ Calls the matplotlib contourf function with most of the implementation
     hidden from the caller.
 
@@ -11,7 +11,9 @@ def contourf(xlim, ylim, func, gridpoints=51, ncontours=20):
         ylim: bounds on y-axis
         func: function to plot, must be a callable compatible with f([x, y])
         gridpoints: number of points to evaluate each variable
-        ncontours: number of contour lines to draw
+        contours:
+            int: number of contour lines to draw
+            array-like: levels at which contours are drawn
     Returns:
         fig, ax: The created figure and axes instances.
     """
@@ -23,5 +25,5 @@ def contourf(xlim, ylim, func, gridpoints=51, ncontours=20):
     for x, y in zip(_X.flatten(), _Y.flatten()):
         _F.append(func([x, y]))
     _F = np.array(_F).reshape(_X.shape)
-    ax.contourf(_X, _Y, _F, ncontours)
+    ax.contourf(_X, _Y, _F, contours)
     return fig, ax
