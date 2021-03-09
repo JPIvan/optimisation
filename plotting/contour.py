@@ -23,7 +23,8 @@ def contourf(xlim, ylim, func, gridpoints=51, contours=20):
     _X, _Y = np.meshgrid(_X, _Y)
     _F = []
     for x, y in zip(_X.flatten(), _Y.flatten()):
-        _F.append(func([x, y]))
+        input_vector = np.array([x, y]).reshape(2, 1)
+        _F.append(func(input_vector))
     _F = np.array(_F).reshape(_X.shape)
     ax.contourf(_X, _Y, _F, contours)
     return fig, ax
