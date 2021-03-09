@@ -16,7 +16,7 @@ At the moment the focus will be on implementing algorithms in Python, as such, n
 
 The best way to use this repo is through the notebooks which demonstrate and discuss usage.
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/JPIvan/optimisation/HEAD?filepath=https%3A%2F%2Fgithub.com%2FJPIvan%2Foptimisation%2Fblob%2Fmain%2Fnotebooks%2FExamples_9_3_2.ipynb) currently only the `/notebooks/examples_9_3_2.ipynb` notebook is complete. You can launch the notebook in binder by clicking the badge.
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/JPIvan/optimisation/HEAD) currently only the `/notebooks/examples_9_3_2.ipynb` notebook is complete. You can launch the notebook in binder by clicking the badge. The server may take some time to start depending on when it was last accessed. Navigate to `/notebooks/examples_9_3_2.ipynb` and you should be able to run the notebook in-browser.
 
 Currently steepest descent with exact line search is the only optimisation procedure that is complete and sufficiently tested. If you wish to use it, the suggested notebook should be enough to get started.
 
