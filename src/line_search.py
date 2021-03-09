@@ -52,7 +52,7 @@ def goldensection(func, x, dx, precision=1e-6):
     for n in range(6):
         if _f(x + dx*10**-n) < _f(x):
             break
-    else:  # did not find any step size for which funciton decreases.
+    else:  # did not find any step size for which function decreases.
         raise ValueError(
             "Function does not appear to decrease in search direction. "
             "Check if func is convex, start point, and search direction."
