@@ -43,6 +43,7 @@ def steepest_descent(
             stop="jac-norm",
             tol=1E-6,
             maxiter=1024,
+            save_path=False,
         ):
     """ Perform a steepest descent search. See Boyd 9.3 for details.
 
@@ -60,6 +61,9 @@ def steepest_descent(
         tol: tolerance for stopping condition
             defaults to 1E-6
         maxiter: maximum number of iterations
+        save_path: determines if intermediate solutions are saved
+            False [DEFAULT] - will not create a list of solutions
+            True - will create a list of solutions in result.solution_path
 
     Returns:
         OptimisationResult
@@ -80,7 +84,14 @@ def steepest_descent(
 
     _x = x0  # search from given start point
     _dx = _jac(_x)  # calculate gradient for first iteration
+    if save_path:
+        solution_path = []  # intermediate solution will be saved here
+    else:
+        solution_path = None  # default value expected by result
     for niter in range(maxiter):
+        if save_path:
+            solution_path.append(_x)
+
         searchdir = -_dx
 
         if ls == "golden-section":
@@ -108,18 +119,20 @@ def steepest_descent(
         return OptimisationResult(
             success=False,
             x=_x,
+            jac=_jac(_x),
             niter=maxiter,
             nfev=_nfev,
             njev=_njev,
             info="Maximum number of iterations exceeded.",
-            jac=_jac(_x)
+            path=solution_path,
         )
 
     return OptimisationResult(
             success=True,
             x=_x,
+            jac=_jac(_x),
             niter=niter,
             nfev=_nfev,
             njev=_njev,
-            jac=_jac(_x)
+            path=solution_path,
         )
