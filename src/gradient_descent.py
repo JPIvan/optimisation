@@ -68,11 +68,9 @@ def steepest_descent(
     Returns:
         OptimisationResult
     """
-    if jac is None:
-        jac = _create_jac(func)
     _nfev, _njev = 0, 0
 
-    def _f(x):  # should only be used locally, pass func to other functions
+    def _f(x):  # should only be used locally, pass func to other modules
         nonlocal _nfev
         _nfev += 1
         return func(x)
@@ -81,6 +79,9 @@ def steepest_descent(
         nonlocal _njev
         _njev += 1
         return jac(x)
+
+    if jac is None:
+        jac = _create_jac(_f)
 
     _x = x0  # search from given start point
     _dx = _jac(_x)  # calculate gradient for first iteration
