@@ -100,7 +100,7 @@ class TestCreateJacobian:
 
     def test_create_jac_nd_integers(self):
         """ Check if the jacobian is correctly calculated for n-D least
-        squares problems with integercoefficients.
+        squares problems with integer coefficients.
         """
         for _ in range(10):  # try 10 random least squares problems
             size = np.random.randint(2, 10)
