@@ -2,7 +2,7 @@ import numpy as np
 from pytest import approx
 
 import context  # noqa
-from src import gradient_descent, least_squares
+from src import wrappers, least_squares
 
 
 class TestCreateJacobian:
@@ -46,11 +46,12 @@ class TestCreateJacobian:
         """
         for _ in range(100):  # try 100 random polynomials
             poly, polyderiv = self._random_polynomial_and_derivative()
+            objectivewrapper = wrappers.ObjectiveFunctionWrapper(poly)
+            # if jac isn't specified one is created automatically
 
-            numericaljac = gradient_descent._create_jac(poly)
             for _ in range(10):  # 10 random points on function
                 x = np.random.uniform(low=-10, high=10, size=(1, 1))
-                assert numericaljac(x).item() == approx(
+                assert objectivewrapper.jac(x).item() == approx(
                     polyderiv(x),
                     abs=1E-6 if polyderiv(x) == 0 else None,
                     # comparision to 0 unreasonably stringent
@@ -69,11 +70,12 @@ class TestCreateJacobian:
             poly, polyderiv = self._random_polynomial_and_derivative(
                 integer_coef=True
             )
+            objectivewrapper = wrappers.ObjectiveFunctionWrapper(poly)
+            # if jac isn't specified one is created automatically
 
-            numericaljac = gradient_descent._create_jac(poly)
             for _ in range(10):  # 10 random integer points on function
                 x = np.random.randint(low=-10, high=10, size=(1, 1))
-                assert numericaljac(x).item() == approx(
+                assert objectivewrapper.jac(x).item() == approx(
                     polyderiv(x),
                     abs=1E-6 if polyderiv(x) == 0 else None,
                     # comparision to 0 unreasonably stringent
@@ -89,11 +91,12 @@ class TestCreateJacobian:
                 A=np.random.uniform(low=-1, high=1, size=(size, size)),
                 b=np.random.uniform(low=-1, high=1, size=size)
             )
-            numericaljac = gradient_descent._create_jac(LS)
+            objectivewrapper = wrappers.ObjectiveFunctionWrapper(LS)
+            # if jac isn't specified one is created automatically
 
             for _ in range(10):  # 10 random points on function
                 x = np.random.uniform(low=-10, high=10, size=(size, 1))
-                assert numericaljac(x) == approx(
+                assert objectivewrapper.jac(x) == approx(
                         2*LS.A.T @ LS.A @ x - 2*LS.A.T @ LS.b
                     )
                 # Compare with analytical solution
@@ -108,11 +111,12 @@ class TestCreateJacobian:
                 A=np.random.randint(low=-10, high=10, size=(size, size)),
                 b=np.random.randint(low=-10, high=10, size=size)
             )
-            numericaljac = gradient_descent._create_jac(LS)
+            objectivewrapper = wrappers.ObjectiveFunctionWrapper(LS)
+            # if jac isn't specified one is created automatically
 
             for _ in range(10):  # 10 random points on function
                 x = np.random.randint(low=-100, high=100, size=(size, 1))
-                assert numericaljac(x) == approx(
+                assert objectivewrapper.jac(x) == approx(
                         2*LS.A.T @ LS.A @ x - 2*LS.A.T @ LS.b
                     )
                 # Compare with analytical solution
