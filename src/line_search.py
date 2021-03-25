@@ -1,5 +1,5 @@
 import numpy as np
-import result.LineSearchResult
+from src.result import LineSearchResult
 
 
 def goldensection(func, x, dx, precision=1e-6):
@@ -74,7 +74,7 @@ def goldensection(func, x, dx, precision=1e-6):
     # do golden section search
     xopt = _gs(x, x + t*dx)  # golden section actually finds the optimal x
 
-    return result.LineSearchResult(
+    return LineSearchResult(
         success=True,
         x=xopt,
         t=np.average((xopt - x) / dx),  # x* = x + t*dx
@@ -129,7 +129,7 @@ def backtracking(func, jac, x, dx, alpha=0.3, beta=0.8):
     t = 1
     while _f(x + t*dx) > _f(x) + alpha*t*_jac(x)*dx:
         t *= beta
-    return result.LineSearchResult(
+    return LineSearchResult(
         success=True,
         x=x + t*dx,
         t=t,
