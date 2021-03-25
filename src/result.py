@@ -1,3 +1,31 @@
+class LineSearchResult:
+    """ A simple structure for storing the results of line search procedures.
+    """
+    def __init__(self, success, x, t, nfev, njev):
+        """
+        Args:
+            success: line search terminated successfully
+            x: result of line search
+            t: stepsize from start point
+            nfev: number of function evaluations
+            njev: number of jacobian evaluations
+        """
+        self.success = success
+        self.x = x
+        self.t = t
+        self.nfev = nfev
+        self.njev = njev
+
+    def __repr__(self):
+        return (
+            f"success: {self.success}\n"
+            f"x*: \n{self.x}\n"
+            f"t: {self.t}\n"
+            f"nfev: {self.nfev}\n"
+            f"njev: {self.njev}\n"
+        )
+
+
 class OptimisationResult:
     """ A simple structure for storing the results of optimisation procedures.
     """

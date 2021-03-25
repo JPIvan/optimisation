@@ -16,14 +16,14 @@ class TestGoldenSection:
             x=3,  # start
             dx=2,  # search direction: -f'(3)
         )
-        assert solution['x'] == approx(4)
+        assert solution.x == approx(4)
 
         solution = line_search.goldensection(
             func=lambda x: (x - 4)**2,  # minimum at x = 4
             x=5,  # start
             dx=-2,  # search direction: -f'(3)
         )
-        assert solution['x'] == approx(4)
+        assert solution.x == approx(4)
 
     def test_correct_nd(self):
         """ Check if n-dimensional problems which are well specified are solved
@@ -59,8 +59,8 @@ class TestGoldenSection:
             # now check that we have found the minimum in this search direction
             # since function is convex we just have to check small deviations
             # from the solution
-            assert LS(solution['x']) < LS(solution['x'] + eps*dx)
-            assert LS(solution['x']) < LS(solution['x'] - eps*dx)
+            assert LS(solution.x) < LS(solution.x + eps*dx)
+            assert LS(solution.x) < LS(solution.x - eps*dx)
 
     def test_undefined_start(self):
         """ Check behaviour when an undefined start point is given.

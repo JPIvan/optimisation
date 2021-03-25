@@ -105,9 +105,9 @@ def steepest_descent(
         else:
             raise ValueError(f"No such search method: \"{ls}\".")
 
-        _nfev += lsres["nfev"]
-        _njev += lsres["njev"]
-        _x = lsres["x"]
+        _nfev += lsres.nfev
+        _njev += lsres.njev
+        _x = lsres.x
 
         if stop == "jac-norm":
             _dx = _jac(_x)  # will use as search direction in next loop
