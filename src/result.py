@@ -1,14 +1,12 @@
 class LineSearchResult:
     """ A simple structure for storing the results of line search procedures.
     """
-    def __init__(self, success, x, t, nfev, njev):
+    def __init__(self, success, x, t):
         """
         Args:
             success: line search terminated successfully
             x: result of line search
             t: stepsize from start point
-            nfev: number of function evaluations
-            njev: number of jacobian evaluations
         """
         self.success = success
         self.x = x
