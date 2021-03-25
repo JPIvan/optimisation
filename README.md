@@ -38,3 +38,18 @@ result.x  # minimum
 The suggested notebook contains snippets that can be used for visualising the intermediate results of the procedure.
 
 This repo is currently not available as a package. Packaging the repo is currently not a priority, so users who wish to experiment with the implementations outside of the suggested notebook must clone the repo. Ensure you have Python 3.8.6 or higher installed and install the requirements in `requirements.txt.`.
+
+## Commit Conventions
+
+The project is being updated to use [Coventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/#summary) where commits are structured as follows:
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+`<type>` should be one of `fix:`, `feat:`, `build:`, `chore:`, `ci:`, `docs:`, `style:`, `refactor:`, `perf:`, `test:`
+
+A breaking change must have `!` appended to its type. See the Conventional Commits specification for more details.
