@@ -15,17 +15,9 @@ def goldensection(func, x, dx, precision=1e-6):
     Returns:
         't': argmin_s f(x + s*dx)
         'x': optimal x found by golden section search
-        'nfev': number of function evaluations performed
-        'njev': number of jacobian evaluations performed
     """
     iphi = (5**0.5 - 1) / 2  # 1/phi
     iphi2 = (3 - 5**0.5) / 2  # 1/phi^2
-    nfev = 0
-
-    def _f(x):
-        nonlocal nfev
-        nfev += 1
-        return func(x)
 
     def _gs(x1, x4, h=None, x2=None, x3=None, fx2=None, fx3=None):
         # We are going to divide the search space into three sections with
@@ -40,9 +32,9 @@ def goldensection(func, x, dx, precision=1e-6):
         if x3 is None:
             x3 = x1 + iphi*h
         if fx2 is None:
-            fx2 = _f(x2)
+            fx2 = func(x2)
         if fx3 is None:
-            fx3 = _f(x3)
+            fx3 = func(x3)
 
         if fx2 < fx3:
             return _gs(x1, x3, h=h*iphi, x3=x2, fx3=fx2)
@@ -51,7 +43,7 @@ def goldensection(func, x, dx, precision=1e-6):
 
     # check search direction
     for n in range(6):
-        if _f(x + dx*10**-n) < _f(x):
+        if func(x + dx*10**-n) < func(x):
             break
     else:  # did not find any step size for which function decreases.
         raise ValueError(
@@ -62,7 +54,7 @@ def goldensection(func, x, dx, precision=1e-6):
     # first we need to bracket the minimum
     t = 1
     for _ in range(64):
-        if _f(x + t*dx) > _f(x):
+        if func(x + t*dx) > func(x):
             break
         t *= 2
     else:
@@ -78,8 +70,6 @@ def goldensection(func, x, dx, precision=1e-6):
         success=True,
         x=xopt,
         t=np.average((xopt - x) / dx),  # x* = x + t*dx
-        nfev=nfev,
-        njev=0,
     )
 
 
@@ -99,8 +89,6 @@ def backtracking(func, jac, x, dx, alpha=0.3, beta=0.8):
     Returns:
         't': argmin_s f(x + s*dx)
         'x': optimal x
-        'nfev': number of function evaluations performed
-        'njev': number of jacobian evaluations performed
     """
     if alpha <= 0 or alpha >= 0.5:
         raise ValueError(
@@ -113,26 +101,11 @@ def backtracking(func, jac, x, dx, alpha=0.3, beta=0.8):
             f" {beta} was given."
         )
 
-    nfev = 0
-    njacev = 0
-
-    def _f(x):
-        nonlocal nfev
-        nfev += 1
-        return func(x)
-
-    def _jac(x):
-        nonlocal njacev
-        njacev += 1
-        return jac(x)
-
     t = 1
-    while _f(x + t*dx) > _f(x) + alpha*t*_jac(x)*dx:
+    while func(x + t*dx) > func(x) + alpha*t*jac(x)*dx:
         t *= beta
     return LineSearchResult(
         success=True,
         x=x + t*dx,
         t=t,
-        nfev=nfev,
-        njev=njacev,
     )

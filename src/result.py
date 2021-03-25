@@ -13,16 +13,12 @@ class LineSearchResult:
         self.success = success
         self.x = x
         self.t = t
-        self.nfev = nfev
-        self.njev = njev
 
     def __repr__(self):
         return (
             f"success: {self.success}\n"
             f"x*: \n{self.x}\n"
             f"t: {self.t}\n"
-            f"nfev: {self.nfev}\n"
-            f"njev: {self.njev}\n"
         )
 
 
