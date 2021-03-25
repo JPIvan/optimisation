@@ -41,7 +41,7 @@ This repo is currently not available as a package. Packaging the repo is current
 
 ## Commit Conventions
 
-The project is being updated to use [Coventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/#summary) where commits are structured as follows:
+The project is being updated to use [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/#summary) where commits are structured as follows:
 ```
 <type>[optional scope]: <description>
 
