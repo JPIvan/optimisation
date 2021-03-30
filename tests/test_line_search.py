@@ -50,7 +50,7 @@ class TestGoldenSection:
             dx = 2*A.T@A@x0 - 2*A.T@b  # derivative of x^TA^TAx-2x^TA^Tb-b^Tb
 
             solution = line_search.goldensection(
-                func=lambda x: LS(x),
+                func=LS,
                 x=x0,
                 dx=-dx,
             )
