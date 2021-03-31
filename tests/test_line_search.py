@@ -27,27 +27,17 @@ class TestLineSearch:
         """
         linesearch = LineSearch(quadratic_objective_1d)  # minimum at x = 4
         linesearch_method = getattr(linesearch, method)
-        solution = linesearch_method(
-            x=np.array(3, ndmin=2),  # start
-            dx=np.array(2, ndmin=2),  # search direction: -f'(3)
-        )
-        if assertion == "minimum_found":
-            assert solution.x == approx(4)
-        elif assertion == "function_decreased":
-            assert np.linalg.norm(solution.x-4) < 1
-        else:
-            raise ValueError("Bad assertion.")
-
-        solution = linesearch_method(
-            x=np.array(5, ndmin=2),  # start
-            dx=np.array(-2, ndmin=2),  # search direction: -f'(5)
-        )
-        if assertion == "minimum_found":
-            assert solution.x == approx(4)
-        elif assertion == "function_decreased":
-            assert np.linalg.norm(solution.x-4) < 1
-        else:
-            raise ValueError("Bad assertion.")
+        for start, searchdir in ((3, 2), (5, -2)):
+            solution = linesearch_method(
+                x=np.array(start, ndmin=2),  # start
+                dx=np.array(searchdir, ndmin=2),  # search direction: -f'(3)
+            )
+            if assertion == "minimum_found":
+                assert solution.x == approx(4)
+            elif assertion == "function_decreased":
+                assert np.linalg.norm(solution.x-4) < 1
+            else:
+                raise ValueError("Bad assertion.")
 
 
 class TestGoldenSection:
