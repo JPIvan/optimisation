@@ -44,7 +44,7 @@ def steepest_descent(
     if save_path:
         solution_path = []  # intermediate solution will be saved here
     else:
-        solution_path = None  # default value expected by result
+        solution_path = None  # default value expected by result class
     for niter in range(maxiter):
         if save_path:
             solution_path.append(_x)
