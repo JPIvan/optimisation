@@ -73,8 +73,8 @@ def goldensection(func, x, dx, precision=1e-6):
     )
 
 
-def backtracking(func, jac, x, dx, alpha=0.3, beta=0.8):
-    """ Golden-section search. Assumes minimum is in the direction dx,
+def backtracking(func, jac, x, dx, alpha=0.3, beta=0.8, maxiter=100):
+    """ Backtracking search. Assumes minimum is in the direction dx,
     starting at x.
 
     Args:
@@ -104,7 +104,7 @@ def backtracking(func, jac, x, dx, alpha=0.3, beta=0.8):
     t = 1
     for _ in range(maxiter):
         if func(x + t*dx) > func(x) + alpha*t*jac(x).T@dx:
-        t *= beta
+            t *= beta
         else:
             break
     else:
