@@ -1,5 +1,5 @@
 import numpy as np
-from pytest import approx, fixture, raises
+from pytest import approx, fixture, raises, mark
 
 import context  # noqa
 from src.line_search import LineSearch
@@ -15,22 +15,42 @@ def quadratic_objective_1d():
     )
 
 
-class TestGoldenSection:
-    def test_correct_1d(self, quadratic_objective_1d):
+class TestLineSearch:
+    @mark.parametrize("method,assertion", [
+            ("goldensection", "minimum_found"),
+            ("backtracking", "function_decreased"),
+        ])
+    def test_linesearch_correct_1d(
+            self, method, assertion, quadratic_objective_1d):
         """ Check if one dimensional problems which are well specified are
         solved correctly.
         """
-        linesearch = LineSearch(quadratic_objective_1d)
-        # minimum at x = 4
-        # 3: start, 2: search direction: -f'(3)
-        solution = linesearch.goldensection(x=3, dx=2)
-        assert solution.x == approx(4)
+        linesearch = LineSearch(quadratic_objective_1d)  # minimum at x = 4
+        linesearch_method = getattr(linesearch, method)
+        solution = linesearch_method(
+            x=np.array(3, ndmin=2),  # start
+            dx=np.array(2, ndmin=2),  # search direction: -f'(3)
+        )
+        if assertion == "minimum_found":
+            assert solution.x == approx(4)
+        elif assertion == "function_decreased":
+            assert np.linalg.norm(solution.x-4) < 1
+        else:
+            raise ValueError("Bad assertion.")
 
-        # minimum at x = 4
-        # 5: start, -2: search direction: -f'(3)
-        solution = linesearch.goldensection(x=5, dx=-2)
-        assert solution.x == approx(4)
+        solution = linesearch_method(
+            x=np.array(5, ndmin=2),  # start
+            dx=np.array(-2, ndmin=2),  # search direction: -f'(5)
+        )
+        if assertion == "minimum_found":
+            assert solution.x == approx(4)
+        elif assertion == "function_decreased":
+            assert np.linalg.norm(solution.x-4) < 1
+        else:
+            raise ValueError("Bad assertion.")
 
+
+class TestGoldenSection:
     def test_correct_nd(self):
         """ Check if n-dimensional problems which are well specified are solved
         correctly.
@@ -94,27 +114,6 @@ class TestGoldenSection:
 
 
 class TestBacktracking:
-    def test_correct_1d(self, quadratic_objective_1d):
-        """ Check if one dimensional problems which are well specified are
-        solved correctly.
-        """
-        linesearch = LineSearch(quadratic_objective_1d)  # minimum at x = 4
-        solution = linesearch.backtracking(
-            x=np.array(3, ndmin=2),  # start
-            dx=np.array(2, ndmin=2),  # search direction: -f'(3)
-        )
-        assert np.linalg.norm(solution.x-4) < 1
-        # backtracking does not find the min,
-        # only ensures that we decrease the function
-
-        solution = linesearch.backtracking(
-            x=np.array(5, ndmin=2),  # start
-            dx=np.array(-2, ndmin=2),  # search direction: -f'(5)
-        )
-        assert np.linalg.norm(solution.x-4) < 1
-        # backtracking does not find the min,
-        # only ensures that we decrease the function
-
     def test_correct_nd(self):
         """ Check if n-dimensional problems which are well specified are solved
         correctly.
