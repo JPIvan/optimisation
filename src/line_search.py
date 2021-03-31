@@ -102,8 +102,16 @@ def backtracking(func, jac, x, dx, alpha=0.3, beta=0.8):
         )
 
     t = 1
-    while func(x + t*dx) > func(x) + alpha*t*jac(x)*dx:
+    for _ in range(maxiter):
+        if func(x + t*dx) > func(x) + alpha*t*jac(x).T@dx:
         t *= beta
+        else:
+            break
+    else:
+        raise ValueError(
+            f"Function does not appear to decrease in given search direction."
+            f"\nDirection: {dx}"
+        )
     return LineSearchResult(
         success=True,
         x=x + t*dx,
