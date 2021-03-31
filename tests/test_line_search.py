@@ -2,7 +2,7 @@ import numpy as np
 from pytest import approx, fixture, raises
 
 import context  # noqa
-from src import line_search
+from src.line_search import LineSearch
 from src.least_squares import least_squares
 from src.wrappers import ObjectiveFunctionWrapper
 
@@ -20,18 +20,15 @@ class TestGoldenSection:
         """ Check if one dimensional problems which are well specified are
         solved correctly.
         """
-        solution = line_search.goldensection(
-            func=quadratic_objective_1d.f,  # minimum at x = 4
-            x=3,  # start
-            dx=2,  # search direction: -f'(3)
-        )
+        linesearch = LineSearch(quadratic_objective_1d)
+        # minimum at x = 4
+        # 3: start, 2: search direction: -f'(3)
+        solution = linesearch.goldensection(x=3, dx=2)
         assert solution.x == approx(4)
 
-        solution = line_search.goldensection(
-            func=quadratic_objective_1d.f,  # minimum at x = 4
-            x=5,  # start
-            dx=-2,  # search direction: -f'(3)
-        )
+        # minimum at x = 4
+        # 5: start, -2: search direction: -f'(3)
+        solution = linesearch.goldensection(x=5, dx=-2)
         assert solution.x == approx(4)
 
     def test_correct_nd(self):
@@ -58,11 +55,8 @@ class TestGoldenSection:
             )  # pick random starting point
             dx = 2*A.T@A@x0 - 2*A.T@b  # derivative of x^TA^TAx-2x^TA^Tb-b^Tb
 
-            solution = line_search.goldensection(
-                func=LS,
-                x=x0,
-                dx=-dx,
-            )
+            linesearch = LineSearch(LS)
+            solution = linesearch.goldensection(x=x0, dx=-dx)
 
             eps = 1e-3  # small deviation
             # now check that we have found the minimum in this search direction
@@ -76,29 +70,27 @@ class TestGoldenSection:
 
         Search should not fail silently, an explicit error is expected.
         """
+        linesearch = LineSearch(lambda x: 1/x)
         with raises(ZeroDivisionError):
-            line_search.goldensection(
-                func=lambda x: 1/x,
-                x=0,  # division by zero
-                dx=1,  # dummy value, no sensible search dir. at start point
-            )
+            linesearch.goldensection(x=0, dx=1)
+            # division by zero
+            # dummy value, no sensible search dir. at start point
+
+        linesearch = LineSearch(lambda x: x**2 if abs(x) < 1 else None)
         with raises((ValueError, TypeError)):
-            line_search.goldensection(
-                func=lambda x: x**2 if abs(x) < 1 else None,
-                x=2,  # function undefined at this value
-                dx=-4,  # good search direction
-            )
+            linesearch.goldensection(x=2, dx=-4)
+            # function undefined at this value
+            # good search direction
 
     def test_bad_search_direction(self, quadratic_objective_1d):
         """ Check that search fail explicitly when a bad search direction is
         given and a minimum cannot be bracketed.
         """
+        linesearch = LineSearch(quadratic_objective_1d)
+        # minimum at x = 4
         with raises(ValueError):
-            line_search.goldensection(
-                func=quadratic_objective_1d.f,  # minimum at x = 4
-                x=3,  # start
-                dx=-1,  # bad search direction; away from minimum
-            )
+            linesearch.goldensection(x=3, dx=-1)
+            # 3: start, -1: bad search direction; away from minimum
 
 
 class TestBacktracking:
@@ -106,9 +98,8 @@ class TestBacktracking:
         """ Check if one dimensional problems which are well specified are
         solved correctly.
         """
-        solution = line_search.backtracking(
-            func=quadratic_objective_1d.f,  # minimum at x = 4
-            jac=quadratic_objective_1d.jac,
+        linesearch = LineSearch(quadratic_objective_1d)  # minimum at x = 4
+        solution = linesearch.backtracking(
             x=np.array(3, ndmin=2),  # start
             dx=np.array(2, ndmin=2),  # search direction: -f'(3)
         )
@@ -116,9 +107,7 @@ class TestBacktracking:
         # backtracking does not find the min,
         # only ensures that we decrease the function
 
-        solution = line_search.backtracking(
-            func=quadratic_objective_1d.f,  # minimum at x = 4
-            jac=quadratic_objective_1d.jac,
+        solution = linesearch.backtracking(
             x=np.array(5, ndmin=2),  # start
             dx=np.array(-2, ndmin=2),  # search direction: -f'(5)
         )
@@ -150,12 +139,10 @@ class TestBacktracking:
             )  # pick random starting point
             dx = 2*A.T@A@x0 - 2*A.T@b  # derivative of x^TA^TAx-2x^TA^Tb-b^Tb
 
-            solution = line_search.backtracking(
-                func=lambda x: LS(x),
-                jac=lambda x: 2*A.T@A@x - 2*A.T@b,
-                x=x0,
-                dx=-dx,
-            )
+            linesearch = LineSearch(ObjectiveFunctionWrapper(
+                func=LS, jac=lambda x: 2*A.T@A@x - 2*A.T@b
+            ))
+            solution = linesearch.backtracking(x=x0, dx=-dx)
 
             xmin = LS.solve_minimum()['x*']
             assert np.linalg.norm(x0-xmin) > np.linalg.norm(solution.x-xmin)
@@ -167,31 +154,28 @@ class TestBacktracking:
 
         Search should not fail silently, an explicit error is expected.
         """
+        linesearch = LineSearch(ObjectiveFunctionWrapper(
+            func=lambda x: 1/x, jac=lambda x: -1/(x**2)
+        ))
         with raises(ZeroDivisionError):
-            line_search.backtracking(
-                func=lambda x: 1/x,
-                jac=lambda x: -1/(x**2),
-                x=0,  # division by zero
-                dx=np.array(1, ndmin=2),
-                # dummy value, no sensible search dir. at start point
-            )
+            linesearch.backtracking(x=0, dx=np.array(1, ndmin=2))
+            # x: division by zero
+            # dx: dummy value, no sensible search dir. at start point
+
+        linesearch = LineSearch(ObjectiveFunctionWrapper(
+            func=lambda x: x**2 if abs(x) < 1 else None,
+            jac=lambda x: 2*x if abs(x) < 1 else None
+        ))
         with raises((ValueError, TypeError, AttributeError)):
-            line_search.backtracking(
-                func=lambda x: x**2 if abs(x) < 1 else None,
-                jac=lambda x: 2*x if abs(x) < 1 else None,
-                x=2,  # function undefined at this value
-                dx=np.array(-4, ndmin=2),  # good search direction
-            )
+            linesearch.backtracking(x=2, dx=np.array(-4, ndmin=2))
+            # x: function undefined at this value
+            # dx: reasonable  search direction
 
     def test_bad_search_direction(self, quadratic_objective_1d):
         """ Check that search fail explicitly when a bad search direction is
         given and a minimum cannot be bracketed.
         """
+        linesearch = LineSearch(quadratic_objective_1d)  # minimum at x = 4
         with raises(ValueError):
-            line_search.backtracking(
-                func=quadratic_objective_1d.f,  # minimum at x = 4
-                jac=quadratic_objective_1d.jac,
-                x=3,  # start
-                dx=np.array(-1, ndmin=2),
-                # bad search direction; away from minimum
-            )
+            linesearch.backtracking(x=3, dx=np.array(-1, ndmin=2))
+            # 3: start, -1: bad search direction; away from minimum

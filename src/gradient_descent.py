@@ -38,6 +38,7 @@ def steepest_descent(
         OptimisationResult
     """
     objective = ObjectiveFunctionWrapper(func, jac)
+    linesearch = line_search.LineSearch(objective)
 
     _x = x0  # search from given start point
     _dx = objective.jac(_x)  # calculate gradient for first iteration
@@ -52,7 +53,7 @@ def steepest_descent(
         searchdir = -_dx
 
         if ls == "golden-section":
-            lsres = line_search.goldensection(objective.f, _x, dx=searchdir)
+            lsres = linesearch.goldensection(_x, dx=searchdir)
         elif ls == "backtracking":
             raise NotImplementedError(
                 "Usage of backtracking search not permitted as backtracking "
