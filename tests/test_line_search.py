@@ -1,25 +1,34 @@
 import numpy as np
-from pytest import approx, raises
+from pytest import approx, fixture, raises
 
 import context  # noqa
 from src import line_search
 from src.least_squares import least_squares
+from src.wrappers import ObjectiveFunctionWrapper
+
+
+@fixture
+def quadratic_objective_1d():
+    return ObjectiveFunctionWrapper(
+        func=lambda x: (x - 4)**2,
+        jac=lambda x: np.array(2*(x - 4), ndmin=2),
+    )
 
 
 class TestGoldenSection:
-    def test_correct_1d(self):
+    def test_correct_1d(self, quadratic_objective_1d):
         """ Check if one dimensional problems which are well specified are
         solved correctly.
         """
         solution = line_search.goldensection(
-            func=lambda x: (x - 4)**2,  # minimum at x = 4
+            func=quadratic_objective_1d.f,  # minimum at x = 4
             x=3,  # start
             dx=2,  # search direction: -f'(3)
         )
         assert solution.x == approx(4)
 
         solution = line_search.goldensection(
-            func=lambda x: (x - 4)**2,  # minimum at x = 4
+            func=quadratic_objective_1d.f,  # minimum at x = 4
             x=5,  # start
             dx=-2,  # search direction: -f'(3)
         )
@@ -80,26 +89,26 @@ class TestGoldenSection:
                 dx=-4,  # good search direction
             )
 
-    def test_bad_search_direction(self):
+    def test_bad_search_direction(self, quadratic_objective_1d):
         """ Check that search fail explicitly when a bad search direction is
         given and a minimum cannot be bracketed.
         """
         with raises(ValueError):
             line_search.goldensection(
-                func=lambda x: (x - 4)**2,  # minimum at x = 4
+                func=quadratic_objective_1d.f,  # minimum at x = 4
                 x=3,  # start
                 dx=-1,  # bad search direction; away from minimum
             )
 
 
 class TestBacktracking:
-    def test_correct_1d(self):
+    def test_correct_1d(self, quadratic_objective_1d):
         """ Check if one dimensional problems which are well specified are
         solved correctly.
         """
         solution = line_search.backtracking(
-            func=lambda x: (x - 4)**2,  # minimum at x = 4
-            jac=lambda x: np.array(2*(x - 4), ndmin=2),
+            func=quadratic_objective_1d.f,  # minimum at x = 4
+            jac=quadratic_objective_1d.jac,
             x=np.array(3, ndmin=2),  # start
             dx=np.array(2, ndmin=2),  # search direction: -f'(3)
         )
@@ -108,8 +117,8 @@ class TestBacktracking:
         # only ensures that we decrease the function
 
         solution = line_search.backtracking(
-            func=lambda x: (x - 4)**2,  # minimum at x = 4
-            jac=lambda x: np.array(2*(x - 4), ndmin=2),
+            func=quadratic_objective_1d.f,  # minimum at x = 4
+            jac=quadratic_objective_1d.jac,
             x=np.array(5, ndmin=2),  # start
             dx=np.array(-2, ndmin=2),  # search direction: -f'(5)
         )
@@ -174,14 +183,14 @@ class TestBacktracking:
                 dx=np.array(-4, ndmin=2),  # good search direction
             )
 
-    def test_bad_search_direction(self):
+    def test_bad_search_direction(self, quadratic_objective_1d):
         """ Check that search fail explicitly when a bad search direction is
         given and a minimum cannot be bracketed.
         """
         with raises(ValueError):
             line_search.backtracking(
-                func=lambda x: (x - 4)**2,  # minimum at x = 4
-                jac=lambda x: np.array(2*(x-4), ndmin=2),
+                func=quadratic_objective_1d.f,  # minimum at x = 4
+                jac=quadratic_objective_1d.jac,
                 x=3,  # start
                 dx=np.array(-1, ndmin=2),
                 # bad search direction; away from minimum
