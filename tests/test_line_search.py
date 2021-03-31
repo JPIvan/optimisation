@@ -26,6 +26,7 @@ class TestLineSearch:
         solved correctly.
         """
         linesearch = LineSearch(quadratic_objective_1d)  # minimum at x = 4
+        expected_minimum = 4
         linesearch_method = getattr(linesearch, method)
         for start, searchdir in ((3, 2), (5, -2)):
             solution = linesearch_method(
@@ -33,9 +34,9 @@ class TestLineSearch:
                 dx=np.array(searchdir, ndmin=2),  # search direction: -f'(3)
             )
             if assertion == "minimum_found":
-                assert solution.x == approx(4)
+                assert solution.x == approx(expected_minimum)
             elif assertion == "function_decreased":
-                assert np.linalg.norm(solution.x-4) < 1
+                assert np.linalg.norm(solution.x-expected_minimum) < 1
             else:
                 raise ValueError("Bad assertion.")
 
