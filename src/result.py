@@ -1,5 +1,8 @@
 class LineSearchResult:
     """ A simple structure for storing the results of line search procedures.
+
+    't': argmin_s f(x + s*dx)
+    'x': optimal x found by golden section search
     """
     def __init__(self, success, x, t):
         """
