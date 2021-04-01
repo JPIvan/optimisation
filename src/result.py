@@ -1,28 +1,25 @@
 class LineSearchResult:
     """ A simple structure for storing the results of line search procedures.
+
+    't': argmin_s f(x + s*dx)
+    'x': optimal x found by golden section search
     """
-    def __init__(self, success, x, t, nfev, njev):
+    def __init__(self, success, x, t):
         """
         Args:
             success: line search terminated successfully
             x: result of line search
             t: stepsize from start point
-            nfev: number of function evaluations
-            njev: number of jacobian evaluations
         """
         self.success = success
         self.x = x
         self.t = t
-        self.nfev = nfev
-        self.njev = njev
 
     def __repr__(self):
         return (
             f"success: {self.success}\n"
             f"x*: \n{self.x}\n"
             f"t: {self.t}\n"
-            f"nfev: {self.nfev}\n"
-            f"njev: {self.njev}\n"
         )
 
 

@@ -1,8 +1,14 @@
 import numpy as np
-from pytest import approx
+from pytest import approx, fixture
 
 import context  # noqa
-from src import gradient_descent, least_squares
+from src import wrappers, least_squares
+
+
+@fixture()
+def rng():
+    rng = np.random.default_rng()
+    return rng
 
 
 class TestCreateJacobian:
@@ -41,22 +47,39 @@ class TestCreateJacobian:
 
         return _poly, _polyderiv
 
-    def test_create_jac_1d(self):
+    def _compare_evaluation_at_points(
+                self,
+                rng_function,
+                func1,
+                func2,
+                n_points=10,
+                shape=(1, 1),
+                bounds=(-10, 10),
+            ):
+        for _ in range(n_points):
+            x = rng_function(low=bounds[0], high=bounds[1], size=shape)
+            assert func1(x) == approx(
+                    func2(x),
+                    abs=1E-6 if shape == (1, 1) and func2(x) == 0 else None,
+                    # comparision to 0 unreasonably stringent
+                )
+
+    def test_create_jac_1d(self, rng):
         """ Check if the jacobian is correctly calculated for 1-D polynomials.
         """
         for _ in range(100):  # try 100 random polynomials
             poly, polyderiv = self._random_polynomial_and_derivative()
+            objectivewrapper = wrappers.ObjectiveFunctionWrapper(poly)
+            # if jac isn't specified one is created automatically
 
-            numericaljac = gradient_descent._create_jac(poly)
-            for _ in range(10):  # 10 random points on function
-                x = np.random.uniform(low=-10, high=10, size=(1, 1))
-                assert numericaljac(x).item() == approx(
-                    polyderiv(x),
-                    abs=1E-6 if polyderiv(x) == 0 else None,
-                    # comparision to 0 unreasonably stringent
-                )
+            self._compare_evaluation_at_points(
+                rng.uniform,
+                objectivewrapper.jac,
+                polyderiv,
+                n_points=10
+            )  # compare result for 10 random points
 
-    def test_create_jac_1d_integers(self):
+    def test_create_jac_1d_integers(self, rng):
         """ Numpy arrrays do not upcast when individual elements are
         modified. Verify that the jacobian creator does not fail when
         passed a function defined with integers only.
@@ -69,17 +92,17 @@ class TestCreateJacobian:
             poly, polyderiv = self._random_polynomial_and_derivative(
                 integer_coef=True
             )
+            objectivewrapper = wrappers.ObjectiveFunctionWrapper(poly)
+            # if jac isn't specified one is created automatically
 
-            numericaljac = gradient_descent._create_jac(poly)
-            for _ in range(10):  # 10 random integer points on function
-                x = np.random.randint(low=-10, high=10, size=(1, 1))
-                assert numericaljac(x).item() == approx(
-                    polyderiv(x),
-                    abs=1E-6 if polyderiv(x) == 0 else None,
-                    # comparision to 0 unreasonably stringent
-                )
+            self._compare_evaluation_at_points(
+                rng.integers,
+                objectivewrapper.jac,
+                polyderiv,
+                n_points=10
+            )  # compare result for 10 random points
 
-    def test_create_jac_nd(self):
+    def test_create_jac_nd(self, rng):
         """ Check if the jacobian is correctly calculated for n-D least
         squares problems.
         """
@@ -89,16 +112,18 @@ class TestCreateJacobian:
                 A=np.random.uniform(low=-1, high=1, size=(size, size)),
                 b=np.random.uniform(low=-1, high=1, size=size)
             )
-            numericaljac = gradient_descent._create_jac(LS)
+            objectivewrapper = wrappers.ObjectiveFunctionWrapper(LS)
+            # if jac isn't specified one is created automatically
 
-            for _ in range(10):  # 10 random points on function
-                x = np.random.uniform(low=-10, high=10, size=(size, 1))
-                assert numericaljac(x) == approx(
-                        2*LS.A.T @ LS.A @ x - 2*LS.A.T @ LS.b
-                    )
-                # Compare with analytical solution
+            self._compare_evaluation_at_points(
+                rng.uniform,
+                objectivewrapper.jac,
+                lambda x: 2*LS.A.T @ LS.A @ x - 2*LS.A.T @ LS.b,
+                n_points=10,
+                shape=(size, 1)
+            )  # compare result for 10 random points with analytical solution
 
-    def test_create_jac_nd_integers(self):
+    def test_create_jac_nd_integers(self, rng):
         """ Check if the jacobian is correctly calculated for n-D least
         squares problems with integer coefficients.
         """
@@ -108,11 +133,14 @@ class TestCreateJacobian:
                 A=np.random.randint(low=-10, high=10, size=(size, size)),
                 b=np.random.randint(low=-10, high=10, size=size)
             )
-            numericaljac = gradient_descent._create_jac(LS)
+            objectivewrapper = wrappers.ObjectiveFunctionWrapper(LS)
+            # if jac isn't specified one is created automatically
 
-            for _ in range(10):  # 10 random points on function
-                x = np.random.randint(low=-100, high=100, size=(size, 1))
-                assert numericaljac(x) == approx(
-                        2*LS.A.T @ LS.A @ x - 2*LS.A.T @ LS.b
-                    )
-                # Compare with analytical solution
+            self._compare_evaluation_at_points(
+                rng.integers,
+                objectivewrapper.jac,
+                lambda x: 2*LS.A.T @ LS.A @ x - 2*LS.A.T @ LS.b,
+                n_points=10,
+                shape=(size, 1),
+                bounds=(-100, 100)
+            )  # compare result for 10 random points with analytical solution

@@ -1,38 +1,7 @@
 import numpy as np
 from src import line_search
 from src.result import OptimisationResult
-
-
-def _create_jac(func):
-    """ Create a function which returns the jacobian of func using the
-    central difference method.
-
-    Args:
-        func: function taking column vector input and returning a single value
-
-    Returns:
-        _jac: a function with argument 'x' which returns the jacobian of func
-            at x.
-    """
-    def _jac(x):
-        """ Numerical derivative using central difference.
-        x must be a column vector.
-        """
-        if x.shape[1] != 1:
-            raise ValueError(f"x must be a column vector, got {x}")
-
-        normx = np.linalg.norm(x)
-        if normx == 0:
-            delta = 1E-6  # prevent division by 0 later
-        else:
-            delta = 1E-6*normx  # scale step-size appropriately
-        jacx = np.zeros_like(x, dtype=float)
-        for i in range(x.shape[0]):
-            dxi = np.zeros_like(x, dtype=float)
-            dxi[i][0] = delta  # difference in only one variable
-            jacx[i] = (func(x + dxi) - func(x - dxi)) / (2*delta)
-        return jacx
-    return _jac
+from src.wrappers import ObjectiveFunctionWrapper
 
 
 def steepest_descent(
@@ -68,27 +37,15 @@ def steepest_descent(
     Returns:
         OptimisationResult
     """
-    _nfev, _njev = 0, 0
-
-    def _f(x):  # should only be used locally, pass func to other modules
-        nonlocal _nfev
-        _nfev += 1
-        return func(x)
-
-    def _jac(x):  # should only be used locally, pass jac to other functions
-        nonlocal _njev
-        _njev += 1
-        return jac(x)
-
-    if jac is None:
-        jac = _create_jac(_f)
+    objective = ObjectiveFunctionWrapper(func, jac)
+    linesearch = line_search.LineSearch(objective)
 
     _x = x0  # search from given start point
-    _dx = _jac(_x)  # calculate gradient for first iteration
+    _dx = objective.jac(_x)  # calculate gradient for first iteration
     if save_path:
         solution_path = []  # intermediate solution will be saved here
     else:
-        solution_path = None  # default value expected by result
+        solution_path = None  # default value expected by result class
     for niter in range(maxiter):
         if save_path:
             solution_path.append(_x)
@@ -96,7 +53,7 @@ def steepest_descent(
         searchdir = -_dx
 
         if ls == "golden-section":
-            lsres = line_search.goldensection(func, _x, dx=searchdir)
+            lsres = linesearch.goldensection(_x, dx=searchdir)
         elif ls == "backtracking":
             raise NotImplementedError(
                 "Usage of backtracking search not permitted as backtracking "
@@ -105,12 +62,10 @@ def steepest_descent(
         else:
             raise ValueError(f"No such search method: \"{ls}\".")
 
-        _nfev += lsres.nfev
-        _njev += lsres.njev
         _x = lsres.x
 
         if stop == "jac-norm":
-            _dx = _jac(_x)  # will use as search direction in next loop
+            _dx = objective.jac(_x)  # save search direction for next loop
             # saves jacobian evaluations
             if np.linalg.norm(_dx) < tol:
                 break
@@ -120,10 +75,10 @@ def steepest_descent(
         return OptimisationResult(
             success=False,
             x=_x,
-            jac=_jac(_x),
+            jac=objective.jac(_x),
             niter=maxiter,
-            nfev=_nfev,
-            njev=_njev,
+            nfev=objective.nfev,
+            njev=objective.njev,
             info="Maximum number of iterations exceeded.",
             path=solution_path,
         )
@@ -131,9 +86,9 @@ def steepest_descent(
     return OptimisationResult(
             success=True,
             x=_x,
-            jac=_jac(_x),
+            jac=objective.jac(_x),
             niter=niter,
-            nfev=_nfev,
-            njev=_njev,
+            nfev=objective.nfev,
+            njev=objective.njev,
             path=solution_path,
         )
