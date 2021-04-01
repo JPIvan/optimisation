@@ -41,6 +41,29 @@ def defined_only_on_part_of_domain_objective_1d():
     return objective, invalid_start, token_search_direction
 
 
+@fixture
+def set_of_quadratic_objectives_nd():
+    objectives, start_points, search_directions, true_mins = [], [], [], []
+    rng = np.random.default_rng(seed=8008135)
+    for n in range(2, 11):
+        A = rng.uniform(low=-1, high=1, size=(n, n))
+        b = rng.uniform(low=-1, high=1, size=(n, 1))
+        LS = least_squares(A, b)
+
+        def _deriv(x, A=A, b=b):   # analytical derivative
+            return 2*A.T@A@x - 2*A.T@b
+
+        objectives.append(ObjectiveFunctionWrapper(
+            func=least_squares(A, b),
+            jac=_deriv,
+        ))
+        start_points.append(rng.uniform(low=-1, high=1, size=(n, 1)))
+        search_directions.append(-objectives[-1].jac(start_points[-1]))
+        # derivative at last start point
+        true_mins.append(LS.solve_minimum()['x*'])
+    return objectives, start_points, search_directions, true_mins
+
+
 class TestLineSearch:
     @mark.parametrize("method,assertion", [
             ("goldensection", "minimum_found"),
@@ -112,74 +135,22 @@ class TestLineSearch:
         with raises((ValueError, TypeError, AttributeError)):
             linesearch_method(x=invalid_start, dx=searchdir)
 
-
-class TestGoldenSection:
-    def test_correct_nd(self):
+    @mark.parametrize("method", ["goldensection", "backtracking"])
+    def test_linesearch_correct_nd(
+        self, method, set_of_quadratic_objectives_nd,
+    ):
         """ Check if n-dimensional problems which are well specified are solved
         correctly.
         """
-        for n in range(2, 10):
-            A = np.random.uniform(
-                low=-1,
-                high=1,
-                size=(n, n)
+        objectives, start_points, search_directions, true_mins = \
+            set_of_quadratic_objectives_nd
+        for i, objective in enumerate(objectives):
+            linesearch = LineSearch(objectives[i])
+            linesearch_method = getattr(linesearch, method)
+            solution = linesearch_method(
+                x=start_points[i],
+                dx=search_directions[i],
             )
-            b = np.random.uniform(
-                low=-1,
-                high=1,
-                size=(n, 1)
-            )
-            LS = least_squares(A, b)  # Least squares instance ||Ax-b||^2
-
-            x0 = np.random.uniform(
-                low=-1,
-                high=1,
-                size=(n, 1)
-            )  # pick random starting point
-            dx = 2*A.T@A@x0 - 2*A.T@b  # derivative of x^TA^TAx-2x^TA^Tb-b^Tb
-
-            linesearch = LineSearch(LS)
-            solution = linesearch.goldensection(x=x0, dx=-dx)
-
-            eps = 1e-3  # small deviation
-            # now check that we have found the minimum in this search direction
-            # since function is convex we just have to check small deviations
-            # from the solution
-            assert LS(solution.x) < LS(solution.x + eps*dx)
-            assert LS(solution.x) < LS(solution.x - eps*dx)
-
-
-class TestBacktracking:
-    def test_correct_nd(self):
-        """ Check if n-dimensional problems which are well specified are solved
-        correctly.
-        """
-        for n in range(2, 10):
-            A = np.random.uniform(
-                low=-1,
-                high=1,
-                size=(n, n)
-            )
-            b = np.random.uniform(
-                low=-1,
-                high=1,
-                size=(n, 1)
-            )
-            LS = least_squares(A, b)  # Least squares instance ||Ax-b||^2
-
-            x0 = np.random.uniform(
-                low=-1,
-                high=1,
-                size=(n, 1)
-            )  # pick random starting point
-            dx = 2*A.T@A@x0 - 2*A.T@b  # derivative of x^TA^TAx-2x^TA^Tb-b^Tb
-
-            linesearch = LineSearch(ObjectiveFunctionWrapper(
-                func=LS, jac=lambda x: 2*A.T@A@x - 2*A.T@b
-            ))
-            solution = linesearch.backtracking(x=x0, dx=-dx)
-
-            xmin = LS.solve_minimum()['x*']
-            assert np.linalg.norm(x0-xmin) > np.linalg.norm(solution.x-xmin)
-            # backtracking does not find the min,
-            # check that we are closer
+            norm_start = np.linalg.norm(start_points[i] - true_mins[i])
+            norm_after_linesearch = np.linalg.norm(solution.x - true_mins[i])
+            assert norm_start > norm_after_linesearch
