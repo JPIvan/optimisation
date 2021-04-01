@@ -9,10 +9,14 @@ from src.wrappers import ObjectiveFunctionWrapper
 
 @fixture
 def quadratic_objective_1d():
-    return ObjectiveFunctionWrapper(
+    objective = ObjectiveFunctionWrapper(
         func=lambda x: (x - 4)**2,
         jac=lambda x: np.array(2*(x - 4), ndmin=2),
     )
+    minimum = 4
+    start_points = [3, 5]
+    search_directions = [-objective.jac(x) for x in start_points]
+    return objective, minimum, start_points, search_directions
 
 
 class TestLineSearch:
@@ -25,18 +29,18 @@ class TestLineSearch:
         """ Check if one dimensional problems which are well specified are
         solved correctly.
         """
-        linesearch = LineSearch(quadratic_objective_1d)  # minimum at x = 4
-        expected_minimum = 4
+        objective, minimum, start, searchdir = quadratic_objective_1d
+        linesearch = LineSearch(objective)  # minimum at x = 4
         linesearch_method = getattr(linesearch, method)
-        for start, searchdir in ((3, 2), (5, -2)):
+        for x0, dx in zip(start, searchdir):
             solution = linesearch_method(
-                x=np.array(start, ndmin=2),  # start
-                dx=np.array(searchdir, ndmin=2),  # search direction: -f'(3)
+                x=x0,
+                dx=dx,
             )
             if assertion == "minimum_found":
-                assert solution.x == approx(expected_minimum)
+                assert solution.x == approx(minimum)
             elif assertion == "function_decreased":
-                assert np.linalg.norm(solution.x-expected_minimum) < 1
+                assert np.linalg.norm(solution.x-minimum) < 1
             else:
                 raise ValueError("Bad assertion.")
 
@@ -97,11 +101,13 @@ class TestGoldenSection:
         """ Check that search fail explicitly when a bad search direction is
         given and a minimum cannot be bracketed.
         """
-        linesearch = LineSearch(quadratic_objective_1d)
-        # minimum at x = 4
-        with raises(ValueError):
-            linesearch.goldensection(x=3, dx=-1)
-            # 3: start, -1: bad search direction; away from minimum
+        objective, minimum, start, searchdir = quadratic_objective_1d
+        linesearch = LineSearch(objective)
+        for x0, dx in zip(start, searchdir):
+            with raises(ValueError):
+                linesearch.goldensection(x=x0, dx=-dx)
+                # give bad search direction; negative of the direction
+                # defined in the fixture
 
 
 class TestBacktracking:
@@ -165,7 +171,10 @@ class TestBacktracking:
         """ Check that search fail explicitly when a bad search direction is
         given and a minimum cannot be bracketed.
         """
-        linesearch = LineSearch(quadratic_objective_1d)  # minimum at x = 4
-        with raises(ValueError):
-            linesearch.backtracking(x=3, dx=np.array(-1, ndmin=2))
-            # 3: start, -1: bad search direction; away from minimum
+        objective, minimum, start, searchdir = quadratic_objective_1d
+        linesearch = LineSearch(objective)
+        for x0, dx in zip(start, searchdir):
+            with raises(ValueError):
+                linesearch.goldensection(x=x0, dx=-dx)
+                # give bad search direction; negative of the direction
+                # defined in the fixture
