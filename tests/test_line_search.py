@@ -44,6 +44,22 @@ class TestLineSearch:
             else:
                 raise ValueError("Bad assertion.")
 
+    @mark.parametrize("method", ["goldensection", "backtracking"])
+    def test_linesearch_bad_search_direction(
+        self, method, quadratic_objective_1d
+    ):
+        """ Check that search fail explicitly when a bad search direction is
+        given and a minimum cannot be bracketed.
+        """
+        objective, minimum, start, searchdir = quadratic_objective_1d
+        linesearch = LineSearch(objective)
+        linesearch_method = getattr(linesearch, method)
+        for x0, dx in zip(start, searchdir):
+            with raises(ValueError):
+                linesearch_method(x=x0, dx=-dx)
+                # give bad search direction; negative of the direction
+                # defined in the fixture
+
 
 class TestGoldenSection:
     def test_correct_nd(self):
@@ -96,18 +112,6 @@ class TestGoldenSection:
             linesearch.goldensection(x=2, dx=-4)
             # function undefined at this value
             # good search direction
-
-    def test_bad_search_direction(self, quadratic_objective_1d):
-        """ Check that search fail explicitly when a bad search direction is
-        given and a minimum cannot be bracketed.
-        """
-        objective, minimum, start, searchdir = quadratic_objective_1d
-        linesearch = LineSearch(objective)
-        for x0, dx in zip(start, searchdir):
-            with raises(ValueError):
-                linesearch.goldensection(x=x0, dx=-dx)
-                # give bad search direction; negative of the direction
-                # defined in the fixture
 
 
 class TestBacktracking:
@@ -166,15 +170,3 @@ class TestBacktracking:
             linesearch.backtracking(x=2, dx=np.array(-4, ndmin=2))
             # x: function undefined at this value
             # dx: reasonable  search direction
-
-    def test_bad_search_direction(self, quadratic_objective_1d):
-        """ Check that search fail explicitly when a bad search direction is
-        given and a minimum cannot be bracketed.
-        """
-        objective, minimum, start, searchdir = quadratic_objective_1d
-        linesearch = LineSearch(objective)
-        for x0, dx in zip(start, searchdir):
-            with raises(ValueError):
-                linesearch.goldensection(x=x0, dx=-dx)
-                # give bad search direction; negative of the direction
-                # defined in the fixture
