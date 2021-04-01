@@ -19,6 +19,28 @@ def quadratic_objective_1d():
     return objective, minimum, start_points, search_directions
 
 
+@fixture
+def division_by_zero_objective_1d():
+    objective = ObjectiveFunctionWrapper(
+        func=lambda x: 1/x,
+        jac=lambda x: np.array(-1/(x**2), ndmin=2),
+    )
+    invalid_start = 0  # division by zero
+    token_search_direction = 1  # dummy value - no real choice at start point
+    return objective, invalid_start, token_search_direction
+
+
+@fixture
+def defined_only_on_part_of_domain_objective_1d():
+    objective = ObjectiveFunctionWrapper(
+        func=lambda x: x**2 if abs(x) < 1 else None,
+        jac=lambda x: 2*x if abs(x) < 1 else None
+    )
+    invalid_start = 2  # invalid start
+    token_search_direction = np.array(-4, ndmin=2)  # okay search direction
+    return objective, invalid_start, token_search_direction
+
+
 class TestLineSearch:
     @mark.parametrize("method,assertion", [
             ("goldensection", "minimum_found"),
@@ -60,6 +82,36 @@ class TestLineSearch:
                 # give bad search direction; negative of the direction
                 # defined in the fixture
 
+    @mark.parametrize("method", ["goldensection", "backtracking"])
+    def test_linesearch_division_by_zero_start(
+        self, method, division_by_zero_objective_1d,
+    ):
+        """ Check behaviour when a start point that causes division by zero
+        is given.
+
+        Search should not fail silently, an explicit error is expected.
+        """
+        objective, invalid_start, searchdir = division_by_zero_objective_1d
+        linesearch = LineSearch(objective)
+        linesearch_method = getattr(linesearch, method)
+        with raises(ZeroDivisionError):
+            linesearch_method(x=invalid_start, dx=searchdir)
+
+    @mark.parametrize("method", ["goldensection", "backtracking"])
+    def test_linesearch_undefined_domain_start(
+        self, method, defined_only_on_part_of_domain_objective_1d,
+    ):
+        """ Check behaviour when an undefined start point is given.
+
+        Search should not fail silently, an explicit error is expected.
+        """
+        objective, invalid_start, searchdir = \
+            defined_only_on_part_of_domain_objective_1d
+        linesearch = LineSearch(objective)
+        linesearch_method = getattr(linesearch, method)
+        with raises((ValueError, TypeError, AttributeError)):
+            linesearch_method(x=invalid_start, dx=searchdir)
+
 
 class TestGoldenSection:
     def test_correct_nd(self):
@@ -96,23 +148,6 @@ class TestGoldenSection:
             assert LS(solution.x) < LS(solution.x + eps*dx)
             assert LS(solution.x) < LS(solution.x - eps*dx)
 
-    def test_undefined_start(self):
-        """ Check behaviour when an undefined start point is given.
-
-        Search should not fail silently, an explicit error is expected.
-        """
-        linesearch = LineSearch(lambda x: 1/x)
-        with raises(ZeroDivisionError):
-            linesearch.goldensection(x=0, dx=1)
-            # division by zero
-            # dummy value, no sensible search dir. at start point
-
-        linesearch = LineSearch(lambda x: x**2 if abs(x) < 1 else None)
-        with raises((ValueError, TypeError)):
-            linesearch.goldensection(x=2, dx=-4)
-            # function undefined at this value
-            # good search direction
-
 
 class TestBacktracking:
     def test_correct_nd(self):
@@ -148,25 +183,3 @@ class TestBacktracking:
             assert np.linalg.norm(x0-xmin) > np.linalg.norm(solution.x-xmin)
             # backtracking does not find the min,
             # check that we are closer
-
-    def test_undefined_start(self):
-        """ Check behaviour when an undefined start point is given.
-
-        Search should not fail silently, an explicit error is expected.
-        """
-        linesearch = LineSearch(ObjectiveFunctionWrapper(
-            func=lambda x: 1/x, jac=lambda x: -1/(x**2)
-        ))
-        with raises(ZeroDivisionError):
-            linesearch.backtracking(x=0, dx=np.array(1, ndmin=2))
-            # x: division by zero
-            # dx: dummy value, no sensible search dir. at start point
-
-        linesearch = LineSearch(ObjectiveFunctionWrapper(
-            func=lambda x: x**2 if abs(x) < 1 else None,
-            jac=lambda x: 2*x if abs(x) < 1 else None
-        ))
-        with raises((ValueError, TypeError, AttributeError)):
-            linesearch.backtracking(x=2, dx=np.array(-4, ndmin=2))
-            # x: function undefined at this value
-            # dx: reasonable  search direction
